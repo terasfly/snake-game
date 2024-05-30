@@ -1,8 +1,6 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// Sukuriame gyvatės segmentų masyvą
-
 let squareSize = 30;
 
 const snake = [
@@ -85,25 +83,24 @@ document.addEventListener('keydown', (event) => {
     console.log(button);
 });
 
-// Pridėkite prisilietimo valdymą
 document.addEventListener('touchstart', handleTouch);
 
 function handleTouch(event) {
     let touch = event.touches[0];
-    let touchX = touch.clientX;
-    let touchY = touch.clientY;
+    let canvasRect = canvas.getBoundingClientRect();
+    let touchX = touch.clientX - canvasRect.left;
+    let touchY = touch.clientY - canvasRect.top;
 
-    // Nustatykite kryptį pagal prisilietimo vietą ekrane
-    if (touchY < canvas.height / 2 && dy === 0) { // Jei prisilietimas virš drobės vidurio
+    if (touchY < canvas.height / 2 && dy === 0) {
         dy = -30;
         dx = 0;
-    } else if (touchY > canvas.height / 2 && dy === 0) { // Jei prisilietimas žemiau drobės vidurio
+    } else if (touchY > canvas.height / 2 && dy === 0) {
         dy = 30;
         dx = 0;
-    } else if (touchX < canvas.width / 2 && dx === 0) { // Jei prisilietimas kairiau drobės vidurio
+    } else if (touchX < canvas.width / 2 && dx === 0) {
         dx = -30;
         dy = 0;
-    } else if (touchX > canvas.width / 2 && dx === 0) { // Jei prisilietimas dešiniau drobės vidurio
+    } else if (touchX > canvas.width / 2 && dx === 0) {
         dx = 30;
         dy = 0;
     }
