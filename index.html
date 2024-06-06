@@ -10,7 +10,17 @@
 
 <body>
     <div class="snake__game">
+        <div class="score" id="score">
+            <p class="score__text">Score: <span class="score__digit">0</span></p>
+            <p class="highestScore">Best Score : <span class="highestScore__digit">0</span></p>
+        </div>
         <canvas id="canvas" width="510px" height="510px"></canvas>
+        <div class="gameOver" id="gamOver">
+            <p class="gameOver__title">
+                Game over
+            </p>
+
+        </div>
     </div>
     <script src="main.js"></script>
 </body>
