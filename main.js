@@ -6,12 +6,19 @@ const highestScore = document.querySelector('.highestScore__digit');
 
 // Counting best result
 let scoreCounting = 0;
-let highestScoreSet = 0;
+
+
+let highestScoreSet = localStorage.getItem('highestScore') ? parseInt(localStorage.getItem('highestScore')) : 0;
+
+let highestScorePlayer = localStorage.get
+
+highestScore.textContent = highestScoreSet;
 
 function highestScorecount() {
     if (scoreCounting > highestScoreSet) {
         highestScoreSet = scoreCounting;
         highestScore.textContent = highestScoreSet;
+        localStorage.setItem('highestScore', highestScoreSet);
     }
 }
 
@@ -36,63 +43,67 @@ function generateRandomFood() {
     };
 }
 
-function isFoodOnSnake(food) {
+function foodOnSnake(food, snake) {
     for (let i = 0; i < snake.length; i++) {
-        const segment = snake[i];
-        if (segment.x === food.x && segment.y === food.y) {
-            return true; // Maisto koordinatės sutampa su gyvatės segmentu
+        let segment = snake[i];
+        if (food.x === segment.x && food.y === segment.y) {
+            return true;
         }
     }
-    return false; // Maisto koordinatės nesutampa su gyvatės segmentais
+    return false;
 }
 
 function startingFood() {
     let newFood;
-    for (let i = 0; i < 100; i++) { // 100 bandymų riba
+    for (let i = 0; i < 100; i++) {
         newFood = generateRandomFood();
-        if (!isFoodOnSnake(newFood)) {
-            break; // Jei koordinatės nesutampa su gyvatės kūnu, nutraukti ciklą
+        if (!foodOnSnake(newFood, snake)) {
+            return newFood;
         }
     }
-    return newFood; // Grąžina tinkamas maisto koordinates
+    return newFood;
 }
 
 function genFood() {
-    if (snake[0].x === food.x && snake[0].y === food.y) { // Patikrina, ar gyvatės galva sutampa su maistu
-        scoreCounting += 1; // Padidina rezultatą
-        score.textContent = scoreCounting; // Atnaujina rezultatą ekrane
-
-        // Generuoja naujas maisto koordinates
-        for (let i = 0; i < 100; i++) { // 100 bandymų riba
-            food = startingFood(); // Sugeneruoja naujas maisto koordinates
-            if (!isFoodOnSnake(food)) { // Patikrina, ar maisto koordinatės nesutampa su gyvatės segmentais
-                break; // Jei koordinatės nesutampa, nutraukti ciklą
-            }
-        }
-
-        let lastSegment = snake[snake.length - 1]; // Paimama paskutinio segmento koordinatė
-        let newSegment = { x: lastSegment.x, y: lastSegment.y }; // Sukuriamas naujas segmentas, naudojant paskutinio segmento koordinatę
-        snake.push(newSegment); // Pridedamas naujas segmentas prie gyvatės
+    if (snake[0].x === food.x && snake[0].y === food.y) {
+        scoreCounting += 1;
+        score.textContent = scoreCounting;
+        food = startingFood();
+        let lastSegment = snake[snake.length - 1];
+        let newSegment = { x: lastSegment.x, y: lastSegment.y };
+        snake.push(newSegment);
     }
 }
 
+const foodImage = new Image()
+foodImage.src = 'food.png'
+
 function drawFood() {
-    // Nustatome maisto spalvą ir nupiešiame jį tam tikroje vietoje
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(food.x, food.y, 30, 30);
+    ctx.drawImage(foodImage, food.x, food.y, squareSize, squareSize);
+}
+
+
+function snakeTail(snake) {
+    const snakeHead = snake[0];
+    for (let i = 1; i < snake.length; i++) {
+        const segment = snake[i];
+        if (snakeHead.x === segment.x && snakeHead.y === segment.y) {
+            // alert('atsitrenke');
+            clearInterval(gameInterval);
+            reset();
+        }
+    }
 }
 
 function snakePart(drawSnake) {
-    // Nustatome gyvatės segmentų spalvą ir nupiešiame juos
-    ctx.fillStyle = 'brown';
+    ctx.fillStyle = 'rgb(161 105 56)';
     ctx.fillRect(drawSnake.x, drawSnake.y, 30, 30);
-    ctx.lineWidth = 3;
+    // ctx.lineWidth = 3;
     ctx.strokeStyle = 'white';
     ctx.strokeRect(drawSnake.x, drawSnake.y, 30, 30);
 }
 
 function loopSnakeParts(snakeTail) {
-    // Iteruojame per kiekvieną gyvatės segmentą ir nupiešiame jį
     for (let i = 0; i < snakeTail.length; i++) {
         snakePart(snakeTail[i]);
     }
@@ -102,10 +113,9 @@ let dx = 0;
 let dy = 0;
 
 function snakeMovement() {
-    // Sukuriame naują galvos segmentą, kuris juda pagal nurodytą kryptį
     let head = { x: snake[0].x + dx, y: snake[0].y + dy };
     snake.unshift(head);
-    if (dx !== 0 || dy !== 0) { // Tik tada pašaliname uodegos segmentą, jei gyvatė juda
+    if (dx !== 0 || dy !== 0) {
         snake.pop();
     }
 }
@@ -124,13 +134,7 @@ function reset() {
     highestScorecount();
     scoreCounting = 0;
     snake.length = 0;
-    snake.push(
-        { x: 210, y: 210 },
-        { x: 180, y: 210 },
-        { x: 150, y: 210 },
-        { x: 120, y: 210 },
-        { x: 90, y: 210 }
-    );
+    snake.push({ x: 210, y: 210 }, { x: 180, y: 210 }, { x: 150, y: 210 }, { x: 120, y: 210 }, { x: 90, y: 210 });
     food = startingFood();
     initialDraw();
     gameStarted = false;
@@ -139,13 +143,11 @@ function reset() {
 let gameStarted = false;
 
 document.addEventListener('keydown', (event) => {
-    // Jei žaidimas dar neprasidėjo, pradėsime jį
     if (!gameStarted) {
         gameStarted = true;
         runGame();
     }
     const button = event.key;
-    // Nustatome judėjimo kryptį pagal paspaustą klavišą
     if (button === 'ArrowUp' && dy === 0) {
         dy = -30;
         dx = 0;
@@ -162,25 +164,43 @@ document.addEventListener('keydown', (event) => {
 });
 
 function initialDraw() {
-    // Išvalome drobę ir nupiešiame pradinę būseną (gyvatę ir maistą)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawFood();
     loopSnakeParts(snake);
 }
 
+// snake speed
+
+let currentSpeed = 300
+let lastSpeedIncreaseScore = 0
+
+function checkSpeed() {
+    if (scoreCounting > 0 && scoreCounting % 5 === 0 && scoreCounting !== lastSpeedIncreaseScore) {
+        // alert('sss')
+        currentSpeed -= 30
+            // if (currentSpeed <= 100) {
+            //     currentSpeed = 100
+            // }
+        lastSpeedIncreaseScore = scoreCounting
+        clearInterval(gameInterval)
+        runGame()
+    }
+}
+
+
 function runGame() {
-    // Paleidžiame intervalą, kuris atnaujina žaidimo būseną kas 100 milisekundžių
     gameInterval = setInterval(() => {
         score.textContent = scoreCounting;
         gameOver.style.display = 'none';
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawFood();
         snakeMovement();
-        genFood(); // Patikriname, ar gyvatė suvalgė maistą
+        genFood();
         snakeHitWall();
+        snakeTail(snake);
         loopSnakeParts(snake);
-    }, 100);
+        checkSpeed()
+    }, currentSpeed);
 }
 
-// Pradinis piešinys, kad būtų rodoma pradinė gyvatės būklė prieš pradedant žaidimą
 initialDraw();
